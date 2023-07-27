@@ -23,7 +23,7 @@ public:
         std::string const&                 target_url             = std::string(),
         std::optional<TimeRange> const&    available_range        = std::nullopt,
         AnyDictionary const&               metadata               = AnyDictionary(),
-        std::optional<Imath::Box2d> const& available_image_bounds = std::nullopt);
+        std::optional<IMATH_NAMESPACE::Box2d> const& available_image_bounds = std::nullopt);
 
     std::string target_url() const noexcept { return _target_url; }
 

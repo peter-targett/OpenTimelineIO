@@ -272,10 +272,10 @@ Track::find_clips(
     return find_children<Clip>(error_status, search_range, shallow_search);
 }
 
-std::optional<Imath::Box2d>
+std::optional<IMATH_NAMESPACE::Box2d>
 Track::available_image_bounds(ErrorStatus* error_status) const
 {
-    std::optional<Imath::Box2d> box;
+    std::optional<IMATH_NAMESPACE::Box2d> box;
     bool                        found_first_clip = false;
     for (const auto& child: children())
     {
@@ -298,7 +298,7 @@ Track::available_image_bounds(ErrorStatus* error_status) const
             }
             if (is_error(error_status))
             {
-                return std::optional<Imath::Box2d>();
+                return std::optional<IMATH_NAMESPACE::Box2d>();
             }
         }
     }

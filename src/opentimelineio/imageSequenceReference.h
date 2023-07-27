@@ -37,7 +37,7 @@ public:
         MissingFramePolicy const           missing_frame_policy   = MissingFramePolicy::error,
         std::optional<TimeRange> const&    available_range        = std::nullopt,
         AnyDictionary const&               metadata               = AnyDictionary(),
-        std::optional<Imath::Box2d> const& available_image_bounds = std::nullopt);
+        std::optional<IMATH_NAMESPACE::Box2d> const& available_image_bounds = std::nullopt);
 
     std::string target_url_base() const noexcept { return _target_url_base; }
 

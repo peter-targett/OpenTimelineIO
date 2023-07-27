@@ -9,7 +9,7 @@ ExternalReference::ExternalReference(
     std::string const&                 target_url,
     std::optional<TimeRange> const&    available_range,
     AnyDictionary const&               metadata,
-    std::optional<Imath::Box2d> const& available_image_bounds)
+    std::optional<IMATH_NAMESPACE::Box2d> const& available_image_bounds)
     : Parent(std::string(), available_range, metadata, available_image_bounds)
     , _target_url(target_url)
 {}
