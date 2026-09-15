@@ -7,7 +7,7 @@
 
 #if defined(OTIO_STATIC)
 #    define OTIO_API
-#    define OTIO_API_TYPE
+#    define OTIO_API_TYPE OPENTIMELINEIO_EXPORT_TYPE
 #    define OTIO_API_TEMPLATE_CLASS(...)
 #    define OTIO_API_TEMPLATE_STRUCT(...)
 #    define OTIO_LOCAL
