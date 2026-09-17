@@ -35,7 +35,7 @@ public:
         double const       g    = 1.f,
         double const       b    = 1.f,
         double const       a    = 1.f,
-        std::string const& name = "");
+        std::string const& name = "white");
 
     OTIO_API Color(Color const& other);
 
