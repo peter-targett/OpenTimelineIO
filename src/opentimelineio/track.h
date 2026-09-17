@@ -51,7 +51,7 @@ public:
         std::optional<TimeRange> const& source_range = std::nullopt,
         std::string const&              kind         = Kind::video,
         AnyDictionary const&            metadata     = AnyDictionary(),
-        std::vector<Marker*> const&     markers      = std::vector<Marker*>()
+        std::vector<Marker*> const&     markers      = std::vector<Marker*>(),
         std::optional<Color> const&     color        = std::nullopt);
 
     /// @brief Return this kind of track.
