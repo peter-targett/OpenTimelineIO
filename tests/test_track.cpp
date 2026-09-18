@@ -6,6 +6,7 @@
 #include <opentimelineio/clip.h>
 #include <opentimelineio/stack.h>
 #include <opentimelineio/track.h>
+#include <opentimelineio/marker.h>
 
 #include <iostream>
 
