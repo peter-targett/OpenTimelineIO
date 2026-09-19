@@ -6,7 +6,6 @@
 #include <opentimelineio/clip.h>
 #include <opentimelineio/stack.h>
 #include <opentimelineio/track.h>
-#include <opentimelineio/marker.h>
 
 #include <iostream>
 
@@ -147,21 +146,6 @@ main(int argc, char** argv)
             std::find(items.begin(), items.end(), track.value) != items.end());
         assertTrue(
             std::find(items.begin(), items.end(), clip.value) != items.end());
-    });
-
-    tests.add_test("test_constructor_markers", [] {
-        SerializableObject::Retainer<Marker> ma0 = new Marker("marker0");
-        SerializableObject::Retainer<Marker> ma1 = new Marker("marker1");
-        SerializableObject::Retainer<Track>  tr  = new Track(
-            "track",
-            std::nullopt,
-            Track::Kind::video,
-            AnyDictionary(),
-            std::nullopt,
-            std::vector<Marker*>({ ma0, ma1 }));
-        assertEqual(tr->markers().size(), 2);
-        assertEqual(tr->markers()[0].value, ma0.value);
-        assertEqual(tr->markers()[1].value, ma1.value);
     });
 
     tests.run(argc, argv);
