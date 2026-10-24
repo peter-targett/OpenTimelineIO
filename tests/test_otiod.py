@@ -41,6 +41,28 @@ class OTIODTester(unittest.TestCase, otio_test_utils.OTIOAssertions):
             result = otio.adapters.read_from_file(otiod_path)
             self.assertIsNotNone(result)
 
+    def test_target_schema_versions(self):
+        """A bundle can be written at older schema versions, for an older OTIO
+        to read."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            tl = otio.schema.Timeline()
+            tl.tracks.markers.append(
+                otio.schema.Marker(name="m", color=otio.core.Color.GREEN))
+
+            options = otio._otio.bundle.WriteOptions()
+            options.target_family_label_spec = {"Marker": 2}
+            otiod_path = os.path.join(temp_dir, "versions.otiod")
+            otio._otio.bundle.write_otiod(tl, otiod_path, options)
+
+            with open(os.path.join(otiod_path, "content.otio")) as f:
+                content = f.read()
+            self.assertIn('"Marker.2"', content)
+            self.assertIn('"GREEN"', content)
+
+            result = otio.adapters.read_from_file(otiod_path)
+            self.assertEqual(result.tracks.markers[0].color,
+                             otio.core.Color.GREEN)
+
 
 if __name__ == "__main__":
     unittest.main()

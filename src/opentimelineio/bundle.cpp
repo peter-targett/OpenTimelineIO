@@ -312,7 +312,9 @@ namespace bundle {
             // Convert the new timeline to json for writing
             out_json = out_clone->to_json_string(
                 error_status,
-                nullptr,
+                options.target_family_label_spec
+                    ? &*options.target_family_label_spec
+                    : nullptr,
                 options.indent);
             return !is_error(error_status);
         }
