@@ -7,6 +7,7 @@
 #include "opentimelineio/externalReference.h"
 #include "opentimelineio/imageSequenceReference.h"
 #include "opentimelineio/missingReference.h"
+#include "opentimelineio/stringUtils.h"
 
 #include <mz.h>
 #include <mz_os.h>
@@ -95,7 +96,7 @@ namespace bundle {
             ErrorStatus* error_status)
         {
             // Check if this file would overwrite any others
-            auto const paths_key = to_lower(source_path.filename().u8string());
+            auto const paths_key = to_lower(to_utf8(source_path.filename()));
             auto const i = paths.find(paths_key);
             if (i != paths.end() &&
                 source_path.parent_path() != i->second.parent_path())
@@ -103,8 +104,8 @@ namespace bundle {
                 if (error_status)
                     *error_status = ErrorStatus(
                         ErrorStatus::FILE_WRITE_FAILED,
-                        "media file '" + source_path.u8string() +
-                        "' would overwrite '" + i->second.u8string() + "'");
+                        "media file '" + to_utf8(source_path) +
+                        "' would overwrite '" + to_utf8(i->second) + "'");
                 return false;
             }
             paths[paths_key] = source_path;
@@ -113,9 +114,9 @@ namespace bundle {
             auto resolved = source_path;
             if (resolved.is_relative() && !relative_media_base_dir.empty())
                 resolved = relative_media_base_dir / resolved;
-            auto const bundle_path = (std::filesystem::u8path(media_dir) /
-                source_path.filename()).u8string();
-            out.insert({ resolved.u8string(), bundle_path });
+            auto const bundle_path = to_utf8(from_utf8(media_dir) /
+                source_path.filename());
+            out.insert({ to_utf8(resolved), bundle_path });
             return true;
         }
 
@@ -173,7 +174,7 @@ namespace bundle {
                         if (file.has_value() &&
                             policy != MediaReferencePolicy::all_missing)
                         {
-                            auto const path = std::filesystem::u8path(*file);
+                            auto const path = from_utf8(*file);
                             if (!register_bundle_file(
                                 path,
                                 relative_media_base_dir,
@@ -183,8 +184,8 @@ namespace bundle {
                                 return false;
                             
                             // Set the URL to the bundle location
-                            ext->set_target_url((std::filesystem::u8path(media_dir) /
-                                path.filename()).u8string());
+                            ext->set_target_url(to_utf8(from_utf8(media_dir) /
+                                path.filename()));
                         }
 
                         // Save the URL for the missing reference metadata
@@ -202,7 +203,7 @@ namespace bundle {
                                 file = file_from_url(seq->target_url_for_image_number(frame));
                                 if (file.has_value())
                                 {
-                                    const auto path = std::filesystem::u8path(*file);
+                                    const auto path = from_utf8(*file);
                                     if (!register_bundle_file(
                                         path,
                                         relative_media_base_dir,
@@ -296,7 +297,7 @@ namespace bundle {
             // Get the relative media path
             std::filesystem::path relative_media_base_dir;
             if (options.relative_media_base_dir.has_value())
-                relative_media_base_dir = std::filesystem::u8path(
+                relative_media_base_dir = from_utf8(
                     *options.relative_media_base_dir);
            
             // Process the media references and get the list of files to add
@@ -330,19 +331,19 @@ namespace bundle {
                 {
                     if (auto ext = dynamic_cast<ExternalReference*>(ref.second))
                     {
-                        auto const current = std::filesystem::u8path(ext->target_url());
+                        auto const current = from_utf8(ext->target_url());
                         if (current.is_relative())
                         {
                             ext->set_target_url(
-                                (bundle_root / current).lexically_normal().u8string());
+                                to_utf8((bundle_root / current).lexically_normal()));
                         }
                     }
                     else if (auto seq = dynamic_cast<ImageSequenceReference*>(ref.second))
                     {
-                        auto const base = std::filesystem::u8path(seq->target_url_base());
+                        auto const base = from_utf8(seq->target_url_base());
                         if (base.is_relative())
                         {
-                            auto absolute = (bundle_root / base).lexically_normal().u8string();
+                            auto absolute = to_utf8((bundle_root / base).lexically_normal());
                             if (!absolute.empty() && absolute.back() != '/')
                                 absolute += '/';
                             seq->set_target_url_base(absolute);
@@ -382,7 +383,7 @@ namespace bundle {
                 if (!_finalized)
                 {
                     std::error_code ec;
-                    std::filesystem::remove(_path, ec);
+                    std::filesystem::remove(from_utf8(_path), ec);
                 }
             }
 
@@ -557,7 +558,7 @@ namespace bundle {
             auto const canonical_out = std::filesystem::weakly_canonical(out_path);
             auto const rel = std::filesystem::relative(canonical_out, canonical_dest);
             if (rel.empty()) return false;
-            auto const first = rel.begin()->u8string();
+            auto const first = to_utf8(*rel.begin());
             return first != "..";
         }
     }
@@ -647,7 +648,7 @@ namespace bundle {
             for (auto const& f : files)
             {
                 total += std::filesystem::file_size(
-                    std::filesystem::u8path(f.source_path));
+                    from_utf8(f.source_path));
             }
         }
         catch (std::exception const& e)
@@ -669,7 +670,7 @@ namespace bundle {
         ErrorStatus*        error_status)
     {
         // Validate the path
-        if (std::filesystem::exists(std::filesystem::u8path(path)))
+        if (std::filesystem::exists(from_utf8(path)))
         {
             if (error_status)
                 *error_status = ErrorStatus(
@@ -722,7 +723,7 @@ namespace bundle {
         ErrorStatus*       error_status)
     {
         // Validate the paths
-        auto const input_path = std::filesystem::u8path(path);
+        auto const input_path = from_utf8(path);
         if (!std::filesystem::is_regular_file(input_path))
         {
             if (error_status)
@@ -734,13 +735,13 @@ namespace bundle {
         std::filesystem::path output_path;
         if (options.extract_path.has_value())
         {
-            output_path = options.extract_path.value();
+            output_path = from_utf8(options.extract_path.value());
             if (std::filesystem::exists(output_path))
             {
                 if (error_status)
                     *error_status = ErrorStatus(
                         ErrorStatus::FILE_WRITE_FAILED,
-                        "output directory '" + output_path.u8string() +
+                        "output directory '" + to_utf8(output_path) +
                         "' already exists");
                 return nullptr;
             }
@@ -766,7 +767,7 @@ namespace bundle {
 
                 zr.for_each_entry([&](std::string const& filename, bool is_dir)
                 {
-                    auto const file_path = output_path / std::filesystem::u8path(filename);
+                    auto const file_path = output_path / from_utf8(filename);
 
                     // Guard against zip slip
                     if (!is_path_safe(output_path, file_path))
@@ -781,7 +782,7 @@ namespace bundle {
                     else
                     {
                         std::filesystem::create_directories(file_path.parent_path());
-                        zr.extract_current_to_file(file_path.u8string());
+                        zr.extract_current_to_file(to_utf8(file_path));
                     }
                 });
             }
@@ -816,7 +817,7 @@ namespace bundle {
             {
                 rewrite_media_to_absolute(
                     timeline,
-                    std::filesystem::u8path(options.extract_path.value()));
+                    from_utf8(options.extract_path.value()));
             }
         }
 
@@ -830,7 +831,7 @@ namespace bundle {
         ErrorStatus*        error_status)
     {
         // Validate the path
-        auto const output_path = std::filesystem::u8path(path);
+        auto const output_path = from_utf8(path);
         if (std::filesystem::exists(output_path))
         {
             if (error_status)
@@ -878,8 +879,8 @@ namespace bundle {
             for (const auto& i : files)
             {
                 std::filesystem::copy_file(
-                    i.source_path,
-                    output_path / std::filesystem::u8path(i.archive_name));
+                    from_utf8(i.source_path),
+                    output_path / from_utf8(i.archive_name));
             }
         }
         catch (const std::exception& e)
@@ -901,7 +902,7 @@ namespace bundle {
         ErrorStatus*       error_status)
     {
         // Validate the paths
-        auto const input_path = std::filesystem::u8path(path);
+        auto const input_path = from_utf8(path);
         if (!std::filesystem::is_directory(input_path))
         {
             if (error_status)
@@ -931,7 +932,7 @@ namespace bundle {
         
         // Read the timeline
         auto result = Timeline::from_json_file(
-            timeline_path.u8string(),
+            to_utf8(timeline_path),
             error_status);
         if (!result || is_error(error_status))
             return nullptr;
