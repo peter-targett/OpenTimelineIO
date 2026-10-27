@@ -552,6 +552,17 @@ namespace bundle {
                 if (mz_zip_reader_entry_save_file(_reader, path.c_str()) != MZ_OK)
                     throw std::runtime_error("cannot extract zip entry in '" +
                         _path + "' to '" + path + "'");
+
+                // Make sure the extracted file is readable whatever
+                // permissions the zip recorded: bundles from older OTIO have
+                // none on content.otio and version.txt.
+                std::error_code ec;
+                std::filesystem::permissions(
+                    from_utf8(path),
+                    std::filesystem::perms::owner_read |
+                        std::filesystem::perms::owner_write,
+                    std::filesystem::perm_options::add,
+                    ec);
             }
 
         private:
