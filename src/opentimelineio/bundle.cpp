@@ -404,6 +404,18 @@ namespace bundle {
                 file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
                 file_info.flag = MZ_ZIP_FLAG_UTF8;
 
+                // minizip-ng only fills in permissions for entries added
+                // from a file, and a mode of 0 extracts as an unreadable
+                // file, so give this one ordinary ones (rw-r--r--). Unix
+                // modes go in the high 16 bits, as mz_zip_writer_add_file
+                // does; DOS and NTFS hosts have none.
+                uint8_t const host = MZ_HOST_SYSTEM(file_info.version_madeby);
+                if (host != MZ_HOST_SYSTEM_MSDOS &&
+                    host != MZ_HOST_SYSTEM_WINDOWS_NTFS)
+                {
+                    file_info.external_fa = 0100644u << 16;
+                }
+
                 if (mz_zip_writer_add_buffer(
                         _writer,
                         const_cast<char*>(text.data()),
