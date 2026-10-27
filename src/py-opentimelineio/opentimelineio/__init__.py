@@ -25,3 +25,13 @@ from . import (
     url_utils,
     versioning,
 )
+
+# Non-editable builds stamp __version__ et al. onto the end of this file (see
+# setup.py), overriding this.  Editable installs load this file unstamped, so
+# fall back to the installed package metadata.
+try:
+    from importlib.metadata import version as _version
+    __version__ = _version("OpenTimelineIO")
+    del _version
+except Exception:
+    __version__ = "unknown"
